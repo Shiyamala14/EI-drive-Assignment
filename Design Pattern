@@ -1,0 +1,326 @@
+
+//1.Behavioural Design Pattern
+//(a)
+import java.util.*;
+
+// Observer interface
+interface Subscriber {
+    void update(String news);
+}
+
+// Concrete Observer
+class NewsSubscriber implements Subscriber {
+    private String name;
+    public NewsSubscriber(String name) { this.name = name; }
+    public void update(String news) {
+        System.out.println(name + " received news: " + news);
+    }
+}
+
+// Subject interface
+interface NewsAgency {
+    void subscribe(Subscriber sub);
+    void unsubscribe(Subscriber sub);
+    void notifySubscribers();
+}
+
+// Concrete Subject
+class NewsChannel implements NewsAgency {
+    private List<Subscriber> subscribers = new ArrayList<>();
+    private String latestNews;
+
+    public void subscribe(Subscriber sub) { subscribers.add(sub); }
+    public void unsubscribe(Subscriber sub) { subscribers.remove(sub); }
+    public void setNews(String news) {
+        this.latestNews = news;
+        notifySubscribers();
+    }
+    public void notifySubscribers() {
+        for (Subscriber sub : subscribers) {
+            sub.update(latestNews);
+        }
+    }
+}
+
+// Demo
+public class ObserverDemo {
+    public static void main(String[] args) {
+        NewsChannel channel = new NewsChannel();
+
+        Subscriber alice = new NewsSubscriber("Alice");
+        Subscriber bob = new NewsSubscriber("Bob");
+
+        channel.subscribe(alice);
+        channel.subscribe(bob);
+
+        channel.setNews("Breaking News: Design Patterns in Java!");
+    }
+}
+
+
+//(b)
+// Strategy interface
+interface PaymentStrategy {
+    void pay(double amount);
+}
+
+// Concrete Strategies
+class CreditCardPayment implements PaymentStrategy {
+    public void pay(double amount) {
+        System.out.println("Paid $" + amount + " with Credit Card.");
+    }
+}
+
+class PayPalPayment implements PaymentStrategy {
+    public void pay(double amount) {
+        System.out.println("Paid $" + amount + " using PayPal.");
+    }
+}
+
+// Context
+class ShoppingCart {
+    private PaymentStrategy paymentStrategy;
+    public void setPaymentStrategy(PaymentStrategy strategy) {
+        this.paymentStrategy = strategy;
+    }
+    public void checkout(double amount) {
+        paymentStrategy.pay(amount);
+    }
+}
+
+// Demo
+public class StrategyDemo {
+    public static void main(String[] args) {
+        ShoppingCart cart = new ShoppingCart();
+
+        cart.setPaymentStrategy(new CreditCardPayment());
+        cart.checkout(150.75);
+
+        cart.setPaymentStrategy(new PayPalPayment());
+        cart.checkout(99.99);
+    }
+}
+
+
+// 2. Creational Design Pattern
+//(a)
+class User {
+    private String firstName;
+    private String lastName;
+    private String email;
+    private int age;
+
+    private User(UserBuilder builder) {
+        this.firstName = builder.firstName;
+        this.lastName = builder.lastName;
+        this.email = builder.email;
+        this.age = builder.age;
+    }
+
+    public static class UserBuilder {
+        private String firstName;
+        private String lastName;
+        private String email;
+        private int age;
+
+        public UserBuilder(String firstName, String lastName) {
+            this.firstName = firstName;
+            this.lastName = lastName;
+        }
+
+        public UserBuilder email(String email) {
+            this.email = email; return this;
+        }
+
+        public UserBuilder age(int age) {
+            this.age = age; return this;
+        }
+
+        public User build() {
+            return new User(this);
+        }
+    }
+
+    @Override
+    public String toString() {
+        return firstName + " " + lastName + ", Email: " + email + ", Age: " + age;
+    }
+}
+
+// Demo
+public class BuilderDemo {
+    public static void main(String[] args) {
+        User user = new User.UserBuilder("John", "Doe")
+                        .email("john.doe@example.com")
+                        .age(30)
+                        .build();
+        System.out.println(user);
+    }
+}
+
+
+//(b)
+public class Logger {
+    private static Logger instance;
+
+    private Logger() {}
+
+    public static synchronized Logger getInstance() {
+        if (instance == null)
+            instance = new Logger();
+        return instance;
+    }
+
+    public void log(String message) {
+        System.out.println("[LOG] " + message);
+    }
+}
+
+// Demo
+public class SingletonDemo {
+    public static void main(String[] args) {
+        Logger logger1 = Logger.getInstance();
+        Logger logger2 = Logger.getInstance();
+
+        logger1.log("First message.");
+        logger2.log("Second message.");
+
+        System.out.println("Are both logger instances same? " + (logger1 == logger2));
+    }
+}
+
+
+//3.Structural Design Pattern
+
+//(a)
+// Component
+interface Coffee {
+    String getDescription();
+    double getCost();
+}
+
+// Concrete Component
+class SimpleCoffee implements Coffee {
+    public String getDescription() {
+        return "Simple coffee";
+    }
+    public double getCost() {
+        return 5.0;
+    }
+}
+
+// Decorator
+abstract class CoffeeDecorator implements Coffee {
+    protected Coffee coffee;
+    public CoffeeDecorator(Coffee coffee) {
+        this.coffee = coffee;
+    }
+}
+
+// Concrete Decorators
+class MilkDecorator extends CoffeeDecorator {
+    public MilkDecorator(Coffee coffee) {
+        super(coffee);
+    }
+    public String getDescription() {
+        return coffee.getDescription() + ", milk";
+    }
+    public double getCost() {
+        return coffee.getCost() + 1.5;
+    }
+}
+
+class SugarDecorator extends CoffeeDecorator {
+    public SugarDecorator(Coffee coffee) {
+        super(coffee);
+    }
+    public String getDescription() {
+        return coffee.getDescription() + ", sugar";
+    }
+    public double getCost() {
+        return coffee.getCost() + 0.5;
+    }
+}
+
+// Demo
+public class DecoratorDemo {
+    public static void main(String[] args) {
+        Coffee coffee = new SimpleCoffee();
+        System.out.println(coffee.getDescription() + " $" + coffee.getCost());
+
+        Coffee milkCoffee = new MilkDecorator(coffee);
+        System.out.println(milkCoffee.getDescription() + " $" + milkCoffee.getCost());
+
+        Coffee sugarMilkCoffee = new SugarDecorator(milkCoffee);
+        System.out.println(sugarMilkCoffee.getDescription() + " $" + sugarMilkCoffee.getCost());
+    }
+}
+
+
+
+//(b)
+// Subsystems
+class DVDPlayer {
+    public void on() { System.out.println("DVD Player on."); }
+    public void play(String movie) { System.out.println("Playing movie: " + movie); }
+    public void off() { System.out.println("DVD Player off."); }
+}
+
+class Projector {
+    public void on() { System.out.println("Projector on."); }
+    public void wideScreenMode() { System.out.println("Projector in widescreen mode."); }
+    public void off() { System.out.println("Projector off."); }
+}
+
+class Amplifier {
+    public void on() { System.out.println("Amplifier on."); }
+    public void setVolume(int level) { System.out.println("Amplifier volume set to " + level); }
+    public void off() { System.out.println("Amplifier off."); }
+}
+
+// Facade
+class HomeTheaterFacade {
+    private DVDPlayer dvd;
+    private Projector projector;
+    private Amplifier amp;
+
+    public HomeTheaterFacade(DVDPlayer dvd, Projector projector, Amplifier amp) {
+        this.dvd = dvd; this.projector = projector; this.amp = amp;
+    }
+
+    public void watchMovie(String movie) {
+        System.out.println("Get ready to watch a movie...");
+        projector.on();
+        projector.wideScreenMode();
+        amp.on();
+        amp.setVolume(7);
+        dvd.on();
+        dvd.play(movie);
+    }
+
+    public void endMovie() {
+        System.out.println("Shutting movie theater down...");
+        dvd.off();
+        amp.off();
+        projector.off();
+    }
+}
+
+// Demo
+public class FacadeDemo {
+    public static void main(String[] args) {
+        DVDPlayer dvd = new DVDPlayer();
+        Projector projector = new Projector();
+        Amplifier amp = new Amplifier();
+
+        HomeTheaterFacade homeTheater = new HomeTheaterFacade(dvd, projector, amp);
+        homeTheater.watchMovie("Inception");
+        homeTheater.endMovie();
+    }
+}
+
+
+
+
+
+
